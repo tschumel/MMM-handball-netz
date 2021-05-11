@@ -17,7 +17,7 @@ Module.register('MMM-soccer', {
         api_key: false,
         colored: false,
       	width: 400,
-        show: [35, 1, 9]//['BL1', 'CL', 'PL'],
+        show: ['BL1'],//['BL1', 'CL', 'PL'],
         updateInterval: 30,
         apiCallInterval: 2 * 60,
         focus_on: false,
@@ -29,13 +29,11 @@ Module.register('MMM-soccer', {
         showMatchDay: true,
         matchType: 'league',    //choose 'next', 'daily', or 'league'
         numberOfNextMatches: 8,
-        /*leagues: {
-            GERMANY: 'BL1',
-            FRANCE: 'FL1',
-            ENGLAND: 'PL',
-            SPAIN: 'PD',
-            ITALY: 'SA'
-        },*/
+        leagues: {
+            'BL1': 35,
+            'CL': 1,
+            'PL': 9,
+        },
         replace: 'default',     //choose 'default', 'short' or '' for original names
         daysOffset: 0,
         debug: false,
@@ -123,7 +121,8 @@ Module.register('MMM-soccer', {
         this.log(`received a Socket Notification: ${notification}`);
         if (notification === 'TABLE') {
             this.log(payload);
-            this.tables[payload.leagueId] = payload.table;
+            var league = Object.keys(this.config.leagues).find(key => this.config.leagues[key] === payload.leagueID);
+            this.tables[league] = payload.table;
             this.standing = this.tables[this.competition].data.table;//this.filterTables(this.tables[this.competition], this.config.focus_on[this.competition]);
             this.log("Current table: " + JSON.stringify(this.standing));
         } else if (notification === 'STANDINGS') {

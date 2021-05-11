@@ -20,6 +20,7 @@ module.exports = NodeHelper.create({
     tables: {},
     teams: {},
     teamList: {},
+    taLeagues: [],
     liveMatches: [],
     liveLeagues: [],
     showStandings: true,
@@ -53,8 +54,11 @@ module.exports = NodeHelper.create({
         this.log("Socket notification received: " + notification + " Payload: " + JSON.stringify(payload));
         if (notification === 'GET_SOCCER_DATA') {
             this.config = payload;
-            this.leagues = payload.show;//[35, 1, 9, 17]//this.config.show;
-            this.getLeagueIds(this.leagues);
+            for (var i = 0; i < payload.show.length; i++) {
+                this.taLeagues.push(this.config.leagues[this.config.show[i]])
+            }
+            this.log(this.taLeagues);
+            this.getLeagueIds(this.taLeagues);
             //this.headers = payload.api_key ? { 'X-Auth-Token': payload.api_key } : {};
             //this.getTables(this.leagues);
             //this.getMatches(this.leagues);
@@ -87,13 +91,14 @@ module.exports = NodeHelper.create({
                 const leaguesList = {};
                 if ('competitions' in parsedBody) {
                     const competitions = parsedBody.competitions;
+                    console.log(leagues);
                     leagues.forEach((l) => {
                         const comp = competitions.find((c) => c.id === l);
                         leaguesList[comp.id] = comp;
                     });
-                    console.log(JSON.stringify(leaguesList));
+                    self.log(JSON.stringify(leaguesList));
                     Object.keys(leaguesList).forEach((id) => {
-                        self.showStandings && self.getStandings(id);
+                        //self.showStandings && self.getStandings(id);
                         self.showTables && leaguesList[id].has_table && self.getTable(id);
                         //self.showScorers && leaguesList[id].has_scorers && self.getScorers(id);
                     });
@@ -115,7 +120,7 @@ module.exports = NodeHelper.create({
         request(options, function (error, _response, body) {
             if (!error && body) {
                 const data = JSON.parse(body);
-                console.log(JSON.stringify(data));
+                self.log(JSON.stringify(data));
                 const tables = data.data.filter((d) => d.type === 'table');
                 self.sendSocketNotification('TABLE', {
                     leagueId: leagueId,
