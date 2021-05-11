@@ -17,9 +17,9 @@ Module.register('MMM-soccer', {
         api_key: false,
         colored: false,
       	width: 400,
-        show: ['BL1', 'CL', 'PL'],
+        show: [35, 1, 9]//['BL1', 'CL', 'PL'],
         updateInterval: 30,
-        apiCallInterval: 10 * 60,
+        apiCallInterval: 2 * 60,
         focus_on: false,
         fadeFocus: true,
         max_teams: false,
@@ -29,13 +29,13 @@ Module.register('MMM-soccer', {
         showMatchDay: true,
         matchType: 'league',    //choose 'next', 'daily', or 'league'
         numberOfNextMatches: 8,
-        leagues: {
+        /*leagues: {
             GERMANY: 'BL1',
             FRANCE: 'FL1',
             ENGLAND: 'PL',
             SPAIN: 'PD',
             ITALY: 'SA'
-        },
+        },*/
         replace: 'default',     //choose 'default', 'short' or '' for original names
         daysOffset: 0,
         debug: false,
@@ -109,11 +109,11 @@ Module.register('MMM-soccer', {
         var self = this;
         setInterval(() => {
             const comps = self.leagues.length;
-            count = (count >= comps - 1) ? 0 : count + 1;
+            count = (count + 1) % self.leagues.length;
             self.competition = self.leagues[count];
             self.log("Showing competition: " + self.competition);
             self.log(self.tables[self.competition]);
-            self.standing = self.filterTables(self.tables[self.competition], self.config.focus_on[self.competition]);
+            self.standing = self.tables[self.competition].data.table;//self.filterTables(self.tables[self.competition], self.config.focus_on[self.competition]);
             self.updateDom(500);
         }, this.config.updateInterval * 1000);
     },
@@ -121,14 +121,14 @@ Module.register('MMM-soccer', {
 
     socketNotificationReceived: function(notification, payload) {
         this.log(`received a Socket Notification: ${notification}`);
-        if (notification === 'TABLES') {
+        if (notification === 'TABLE') {
             this.log(payload);
-            this.tables = payload;
-            this.standing = this.filterTables(this.tables[this.competition], this.config.focus_on[this.competition]);
+            this.tables[payload.leagueId] = payload.table;
+            this.standing = this.tables[this.competition].data.table;//this.filterTables(this.tables[this.competition], this.config.focus_on[this.competition]);
             this.log("Current table: " + JSON.stringify(this.standing));
-        } else if (notification === 'MATCHES') {
-            this.matches = payload;
-            this.log("Received matches: "+this.matches);
+        } else if (notification === 'STANDINGS') {
+            this.matches[payload.leagueId] = payload.standings;
+            this.log("Received matches: " + this.matches);
         } else if (notification === 'TEAMS') {
             this.teams = payload;
         /*} else if (notification === 'LIVE_MATCHES') {
@@ -315,7 +315,7 @@ Module.register('MMM-soccer', {
         tableArray = tables.standings.filter(table => {
             return table.type === "TOTAL";
         });
-        if (tableArray[0].group === "GROUP_A" && this.config.focus_on.hasOwnProperty(tables.competition.code)) {			//cup mode
+        if (tableArray[0].group === "GROUP_A" && this.config.focus_on.hasOwnProperty(tables.competition.code)) {  //cup mode
             for (var t = 0; t < tableArray.length; t++) {
                 for (var n = 0; n < tableArray[t].table.length; n++) {
                     if (tableArray[t].table[n].team.name === focusTeam) {

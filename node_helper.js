@@ -11,6 +11,7 @@
 
 const axios = require('axios');
 const NodeHelper = require('node_helper');
+const request = require('request');
 const moment = require('moment');
 
 module.exports = NodeHelper.create({
@@ -21,7 +22,27 @@ module.exports = NodeHelper.create({
     teamList: {},
     liveMatches: [],
     liveLeagues: [],
+    showStandings: true,
+    showTables: true,
+    showScorers: true,
+    showDetails: true,
     isRunning: false,
+    baseURL: 'https://www.ta4-data.de/ta/data',
+    requestOptions: {
+        method: 'POST',
+        headers: {
+            Host: 'ta4-data.de',
+            'Content-Type': 'application/x-www-form-urlencoded',
+            Connection: 'keep-alive',
+            Accept: '*/*',
+            'User-Agent': 'TorAlarm/20161202 CFNetwork/808.1.4 Darwin/16.1.0',
+            'Accept-Language': 'en-us',
+            'Accept-Encoding': 'gzip',
+            'Content-Length': '49',
+        },
+        body: JSON.stringify({ lng: 'en-US', device_type: 0, decode: 'decode' }),
+        form: false,
+    },
 
     start: function() {
         console.log(`Starting module: ${this.name}`);
@@ -29,33 +50,190 @@ module.exports = NodeHelper.create({
 
 
     socketNotificationReceived: function(notification, payload) {
+        this.log("Socket notification received: " + notification + " Payload: " + JSON.stringify(payload));
         if (notification === 'GET_SOCCER_DATA') {
-            this.log("Socket notification received: " + notification + " Payload: " + JSON.stringify(payload));
             this.config = payload;
-            this.leagues = this.config.show;
-            this.headers = payload.api_key ? { 'X-Auth-Token': payload.api_key } : {};
-            this.getTables(this.leagues);
-            this.getMatches(this.leagues);
+            this.leagues = payload.show;//[35, 1, 9, 17]//this.config.show;
+            this.getLeagueIds(this.leagues);
+            //this.headers = payload.api_key ? { 'X-Auth-Token': payload.api_key } : {};
+            //this.getTables(this.leagues);
+            //this.getMatches(this.leagues);
+            //this.getMatchDetails(this.leagues);
             if (!this.isRunning) {
                 this.log("Starting API call cycle");
-                this.liveMode = false;
                 this.isRunning = true;
-                this.scheduleAPICalls(false);
+                this.callInterval = setInterval(() => {
+                    self.getLeagueIds(self.leagues);
+                    //self.getMatches(self.leagues);
+                    //this.getMatchDetails(this.leagues);
+                }, this.config.apiCallInterval * 1000);
             }
         }
     },
 
-    scheduleAPICalls: function(live) {
-        var self = this;
-        //var updateInterval = (this.liveLeagues.length > 0) ? (60/(Math.floor(5/this.liveLeagues.length))) * 1000 : this.config.apiCallInterval * 1000;
-        var updateInterval = (this.liveLeagues.length > 0) ? 60 * 1000 : this.config.apiCallInterval * 1000;
-        this.callInterval = setInterval(() => {
-            self.getTables(self.leagues);
-            self.getMatches(self.leagues);
-            //self.getMatchDetails(self.liveMatches);
-        }, updateInterval);
+    
+    getLeagueIds: function (leagues) {
+        
+        const url = `${this.baseURL}/competitions`;
+        const self = this;
+        const options = {
+            ...this.requestOptions,
+            url,
+        };
+
+        request(options, function (error, _response, body) {
+            if (!error && body) {
+                const parsedBody = JSON.parse(body);
+                const leaguesList = {};
+                if ('competitions' in parsedBody) {
+                    const competitions = parsedBody.competitions;
+                    leagues.forEach((l) => {
+                        const comp = competitions.find((c) => c.id === l);
+                        leaguesList[comp.id] = comp;
+                    });
+                    console.log(JSON.stringify(leaguesList));
+                    Object.keys(leaguesList).forEach((id) => {
+                        self.showStandings && self.getStandings(id);
+                        self.showTables && leaguesList[id].has_table && self.getTable(id);
+                        //self.showScorers && leaguesList[id].has_scorers && self.getScorers(id);
+                    });
+                }
+                self.sendSocketNotification('LEAGUES', { leaguesList });
+            } else {
+                Log.error(this.name, 'getLeagueIds', error);
+            }
+        });
     },
 
+    getTable: function (leagueId) {
+        const url = `${this.baseURL}/competitions/${leagueId.toString()}/table`;
+        const self = this;
+        const options = {
+            ...this.requestOptions,
+            url,
+        };
+        request(options, function (error, _response, body) {
+            if (!error && body) {
+                const data = JSON.parse(body);
+                console.log(JSON.stringify(data));
+                const tables = data.data.filter((d) => d.type === 'table');
+                self.sendSocketNotification('TABLE', {
+                    leagueId: leagueId,
+                    table: tables,
+                });
+                /*self.timeoutTable[leagueId] = setTimeout(function () {
+                    self.getTable(leagueId);
+                }, self.refreshTime);*/
+            }
+        });
+    },
+
+    getStandings: function (leagueId) {
+        const url = `${this.baseURL}/competitions/${leagueId.toString()}/matches/round/0`;
+        const self = this;
+        const options = {
+            ...this.requestOptions,
+            url,
+        };
+
+        request(options, function async (error, _response, body) {
+            if (!error && body) {
+                const data = JSON.parse(body);
+                console.log(self.name, 'getStandings | data', JSON.stringify(data));
+                self.refreshTime = (data.refresh_time || 5 * 60) * 1000;
+                const standings = data;
+
+                const forLoop = async () => {
+                    if(self.showDetails) {
+                        for (let s of standings.data) {
+                            if (s.type === 'matches') {
+                                const matches = s.matches;
+                                for(let m of matches) {
+                                const d = await self.getDetails(leagueId, m.match_id);
+                                console.log(JSON.stringify(d));
+                                details = d.filter(t => t.type === 'details');
+                                    m.details = details && details[0] ? details[0].details : []
+                                };
+                            }
+                        };
+                    }
+                }
+
+                forLoop().then(() => {
+                    console.log(standings);
+                    self.sendSocketNotification('STANDINGS', {
+                        leagueId: leagueId,
+                        standings: standings,
+                    });
+                    /*self.timeoutStandings[leagueId] = setTimeout(function () {
+                        self.getStandings(leagueId);
+                    }, self.refreshTime);*/
+                });
+            } else {
+                Log.error(error);
+                /*self.timeoutStandings[leagueId] = setTimeout(function () {
+                    self.getStandings(leagueId);
+                }, 5 * 60 * 1000);*/
+            }
+        });
+    },
+    
+    
+    getDetails: function (leagueId, matchId) {
+        const url = `${this.baseURL}/competitions/${leagueId.toString()}/matches/${matchId.toString()}/details`;
+        const self = this;
+        const options = {
+            ...this.requestOptions,
+            url,
+        };
+        let details = [];
+        return new Promise((resolve, _reject) => {
+            request(options, function (error, _response, body) {
+                if (!error && body) {
+                    const data = JSON.parse(body);
+                    console.log(JSON.stringify(data));
+                    details = data.data || [];
+                }
+                resolve(details);
+            });
+        });
+    },
+
+    
+    getScorers: function (leagueId) {
+        const url = `${this.baseURL}/competitions/${leagueId.toString()}/scorers`;
+        Log.info(this.name, 'getScorers', url);
+        const self = this;
+        const options = {
+            ...this.requestOptions,
+            url,
+        };
+
+        request(options, function (error, _response, body) {
+            if (!error && body) {
+                const data = JSON.parse(body);
+                Log.debug(self.name, 'getScorers | data', JSON.stringify(data, null, 2));
+                self.refreshTime = (data.refresh_time || 5 * 60) * 1000;
+                Log.debug(self.name, 'getScorers | refresh_time', data.refresh_time, self.refreshTime);
+                const scorers = data.data || [];
+                self.sendSocketNotification('SCORERS', {
+                    leagueId: leagueId,
+                    scorers: scorers,
+                });
+                self.timeoutScorers[leagueId] = setTimeout(function () {
+                    self.getScorers(leagueId);
+                }, self.refreshTime);
+            } else {
+                Log.error(error);
+                self.timeoutScorers[leagueId] = setTimeout(function () {
+                    self.getScorers(leagueId);
+                }, 5 * 60 * 1000);
+            }
+        });
+    },
+
+
+    
     getTables: function(leagues) {
         var self = this;
         this.log("Collecting league tables for leagues: "+leagues);
@@ -101,93 +279,7 @@ module.exports = NodeHelper.create({
         });*/
     },
 
-    getMatches: function(leagues) {
-        var now = moment().subtract(60*13, "minutes");	//subtract minutes or hours to test live mode
-        this.log("Collecting matches for leagues: " + leagues);
-        var urlArray = leagues.map(league => { return `http://api.football-data.org/v2/competitions/${league}/matches`; });
-        this.liveLeagues = [];
-        var self = this;
-        Promise.all(urlArray.map(url => {
-            return axios.get(url, { headers: self.headers })
-            .then(function (response) {
-                //console.log("Requests available: " + response.headers["x-requests-available-minute"]);
-                var matchesData = response.data;
-                var currentLeague = matchesData.competition.code;
-                matchesData.matches.forEach(match => {
-                    delete match.referees;
-
-                    //check for live matches
-                    if (match.status == "IN_PLAY" || Math.abs(moment(match.utcDate).diff(now, 'seconds')) < self.config.apiCallInterval * 2) {
-                        if (self.liveMatches.indexOf(match.id) === -1) {
-                            self.log(`Live match detected starting at ${moment(match.utcDate).format("HH:mm")}, Home Team: ${match.homeTeam.name}`);
-                            self.log(`Live match ${match.id} added at ${moment().format("HH:mm")}`);
-                            self.liveMatches.push(match.id);
-                        }
-                        if (self.liveLeagues.indexOf(currentLeague) === -1) {
-                            self.log(`Live league ${currentLeague} added at ${moment().format("HH:mm")}`);
-                            self.liveLeagues.push(currentLeague);
-                        }
-                    } else {
-                        if (self.liveMatches.indexOf(match.id)!= -1) {
-                            self.log("Live match finished!");
-                            self.liveMatches.splice(self.liveMatches.indexOf(match.id), 1);
-                        }
-                    }
-                });
-                return(matchesData);
-            })
-            .catch(function (error) {
-                self.handleErrors(error, url);
-                return {};
-            });
-        }))
-        .then(function (matchesArray) {
-            matchesArray.forEach(comp => {
-                if (comp.hasOwnProperty('competition')) {
-                    self.matches[comp.competition.code] = comp;
-                }
-            });
-            //self.log("Collected Matches: "+self.matches);
-            self.log("Live matches: "+JSON.stringify(self.liveMatches));
-            self.log("Live leagues: "+JSON.stringify(self.liveLeagues));
-            self.sendSocketNotification("MATCHES", self.matches);
-            self.toggleLiveMode(self.liveMatches.length > 0);
-        })
-        .catch(function(error) {
-            console.error("[MMM-soccer] ERROR occured while fetching matches: " + error);
-        });
-    },
-
-
-    getMatchDetails: function (matches) {
-        var self = this;
-        this.log("Getting match details for matches: " + matches);
-        var urlArray = matches.map(match => { return `http://api.football-data.org/v2/matches/${match}`; });
-        Promise.all(urlArray.map(url => {
-            return axios.get(url, { headers: self.headers })
-            .then(function (response) {
-                console.log("Requests available: " + response.headers["x-requests-available-minute"]);
-                var matchData = response.data;
-                self.log(matchData);
-                if (matchData.match.status != "IN_PLAY" && self.liveMatches.indexOf(matchData.match.id)!= -1) {
-                    self.log("Live match finished");
-                    self.liveMatches.splice(self.liveMatches.indexOf(comp.matches[m].id), 1);
-                    self.log("Live matches: "+self.liveMatches);
-                }
-                return(matchData);
-            })
-            .catch(function (error) {
-                self.handleErrors(error, url);
-                return {};
-            });
-        }))
-        .then(function (liveMatchesArray) {
-            /*LiveMatchesArray.forEach(match => {
-                liveMatches[match.match.competition.id] = match;
-            });*/
-            self.sendSocketNotification("LIVE_MATCHES", liveMatchesArray);
-        });
-    },
+    
 
     handleErrors: function(error, url) {
         console.log("An error occured while requesting the API for Data: "+error);
