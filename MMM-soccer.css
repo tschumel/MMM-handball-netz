@@ -107,6 +107,11 @@
     #text-decoration: underline;
 }
 
+.MMM-soccer .matchDetails {
+    padding: 20px 5px;
+    margin: auto;
+}
+
 .MMM-soccer svg {
     background-color: #000;
 }

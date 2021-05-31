@@ -20,13 +20,12 @@ module.exports = NodeHelper.create({
     tables: {},
     teams: {},
     teamList: {},
+    leaguesList: {},
     taLeagues: [],
     liveMatches: [],
-    liveLeagues: [],
-    showStandings: true,
-    showTables: true,
-    showScorers: true,
-    showDetails: true,
+    timeoutTable: {},
+    timeoutStandings: {},
+    timeoutScorers: {},
     isRunning: false,
     baseURL: 'https://www.ta4-data.de/ta/data',
     requestOptions: {
@@ -49,35 +48,35 @@ module.exports = NodeHelper.create({
         console.log(`Starting module: ${this.name}`);
     },
 
+    
+    stop: function () {
+        console.log('Stopping node helper for:', this.name);
+        [...this.timeoutStandings, ...this.timeoutScorers, ...this.timeoutTable].forEach((id) => clearTimeout(id));
+    },
 
     socketNotificationReceived: function(notification, payload) {
         this.log("Socket notification received: " + notification + " Payload: " + JSON.stringify(payload));
         if (notification === 'GET_SOCCER_DATA') {
             this.config = payload;
+            this.taLeagues = [];
             for (var i = 0; i < payload.show.length; i++) {
                 this.taLeagues.push(this.config.leagues[this.config.show[i]])
             }
             this.log(this.taLeagues);
             this.getLeagueIds(this.taLeagues);
             //this.headers = payload.api_key ? { 'X-Auth-Token': payload.api_key } : {};
-            //this.getTables(this.leagues);
-            //this.getMatches(this.leagues);
-            //this.getMatchDetails(this.leagues);
-            if (!this.isRunning) {
-                this.log("Starting API call cycle");
-                this.isRunning = true;
-                this.callInterval = setInterval(() => {
-                    self.getLeagueIds(self.leagues);
-                    //self.getMatches(self.leagues);
-                    //this.getMatchDetails(this.leagues);
-                }, this.config.apiCallInterval * 1000);
-            }
+            this.isRunning = true;
         }
     },
 
     
     getLeagueIds: function (leagues) {
         
+        leagues.forEach((id) => {
+            clearTimeout(this.timeoutStandings[id]);
+            clearTimeout(this.timeoutTable[id]);
+            clearTimeout(this.timeoutScorers[id]);
+        });
         const url = `${this.baseURL}/competitions`;
         const self = this;
         const options = {
@@ -97,13 +96,14 @@ module.exports = NodeHelper.create({
                         leaguesList[comp.id] = comp;
                     });
                     self.log(JSON.stringify(leaguesList));
+                    self.leaguesList = leaguesList;
                     Object.keys(leaguesList).forEach((id) => {
-                        //self.showStandings && self.getStandings(id);
-                        self.showTables && leaguesList[id].has_table && self.getTable(id);
+                        self.config.showMatches && self.getMatches(id);
+                        self.config.showTables && leaguesList[id].has_table && self.getTable(id);
                         //self.showScorers && leaguesList[id].has_scorers && self.getScorers(id);
                     });
                 }
-                self.sendSocketNotification('LEAGUES', { leaguesList });
+                self.sendSocketNotification('LEAGUES', self.leaguesList);
             } else {
                 Log.error(this.name, 'getLeagueIds', error);
             }
@@ -120,43 +120,45 @@ module.exports = NodeHelper.create({
         request(options, function (error, _response, body) {
             if (!error && body) {
                 const data = JSON.parse(body);
-                self.log(JSON.stringify(data));
+                //self.log(data);
                 const tables = data.data.filter((d) => d.type === 'table');
+                var refreshTime = (data.refresh_time || 5 * 60) * 1000;
                 self.sendSocketNotification('TABLE', {
+                    refreshTime: refreshTime,
                     leagueId: leagueId,
                     table: tables,
                 });
-                /*self.timeoutTable[leagueId] = setTimeout(function () {
+                self.timeoutTable[leagueId] = setTimeout(function () {
                     self.getTable(leagueId);
-                }, self.refreshTime);*/
+                }, refreshTime);
             }
         });
     },
 
-    getStandings: function (leagueId) {
+    getMatches: function (leagueId) {
         const url = `${this.baseURL}/competitions/${leagueId.toString()}/matches/round/0`;
         const self = this;
         const options = {
             ...this.requestOptions,
             url,
         };
-
+        self.log("Getting Standings for league: "+leagueId);
         request(options, function async (error, _response, body) {
             if (!error && body) {
                 const data = JSON.parse(body);
-                console.log(self.name, 'getStandings | data', JSON.stringify(data));
-                self.refreshTime = (data.refresh_time || 5 * 60) * 1000;
+                var refreshTime = (data.refresh_time || 5 * 60) * 1000;
                 const standings = data;
+                standings.rounds_detailed = "";
+                standings.rounds = "";
 
                 const forLoop = async () => {
-                    if(self.showDetails) {
+                    if(self.config.showDetails) {
                         for (let s of standings.data) {
                             if (s.type === 'matches') {
                                 const matches = s.matches;
                                 for(let m of matches) {
-                                const d = await self.getDetails(leagueId, m.match_id);
-                                console.log(JSON.stringify(d));
-                                details = d.filter(t => t.type === 'details');
+                                    const d = await self.getDetails(leagueId, m.match_id);
+                                    details = d.filter(t => t.type === 'details');
                                     m.details = details && details[0] ? details[0].details : []
                                 };
                             }
@@ -165,20 +167,21 @@ module.exports = NodeHelper.create({
                 }
 
                 forLoop().then(() => {
-                    console.log(standings);
+                    self.log(standings);
                     self.sendSocketNotification('STANDINGS', {
+                        refreshTime: refreshTime,
                         leagueId: leagueId,
                         standings: standings,
                     });
-                    /*self.timeoutStandings[leagueId] = setTimeout(function () {
-                        self.getStandings(leagueId);
-                    }, self.refreshTime);*/
+                    self.timeoutStandings[leagueId] = setTimeout(function () {
+                        self.getMatches(leagueId);
+                    }, refreshTime);
                 });
             } else {
                 Log.error(error);
-                /*self.timeoutStandings[leagueId] = setTimeout(function () {
-                    self.getStandings(leagueId);
-                }, 5 * 60 * 1000);*/
+                var matchesTimeout = setTimeout(function () {
+                    self.getMatches(leagueId);
+                }, refreshTime);
             }
         });
     },
@@ -196,7 +199,7 @@ module.exports = NodeHelper.create({
             request(options, function (error, _response, body) {
                 if (!error && body) {
                     const data = JSON.parse(body);
-                    console.log(JSON.stringify(data));
+                    //self.log(data);
                     details = data.data || [];
                 }
                 resolve(details);

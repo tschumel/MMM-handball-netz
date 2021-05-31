@@ -10,23 +10,31 @@
 				{% for i in range(0, comps.length) %}
 				<table class="games">
 					<tbody>
-						<tr class="small matchDay bold">{{ comps[i].competition }}</div></tr>
-						<tr class="small matchDay bold">{{ comps[i].season }}</div></tr>
-						{% for m in range(0, comps[i].matches.length) %}					
+						<tr class="small matchDay bold">
+                            <td colspan="5">
+                                <div>{{ comps[i].competition }}</div>
+                                <div>{{ comps[i].season }}</div>
+                            </td>
+                        </tr>
+						{% for m in range(0, comps[i].matches.length) %}			
 							<tr class="centered-row {% if comps[i].matches[m].focused %}bright{% endif %}">
-							<td class="name matchName homeTeam {{comps[i].matches[m].status}} {{comps[i].matches[m].homeTeam.status}}">{{comps[i].matches[m].homeTeam.name | replace}}</td>
-							{% if config.logos %}
-								<td class="logo">
-									<!--<svg class="logo-svg" width="100%" height="100%">{{ teams[comps[i].matches[m].homeTeam.id].crestUrl }}</svg>-->
-									<img class="icon {% if not config.colored %}no-color{% endif %}" src="{{teams[comps[i].matches[m].homeTeam.id].crestUrl}}"/>
-								</td>
-							{% endif %}
-							<td class="status bold {{comps[i].matches[m].status}}">{{ comps[i].matches[m].state }}</td>
-							{% if config.logos %}
-								<td class="logo"><img class="icon {% if not config.colored %}no-color{% endif %}" src="{{teams[comps[i].matches[m].awayTeam.id].crestUrl}}"/></td>
-							{% endif %}
-							<td class="name matchName awayTeam {{comps[i].matches[m].status}} {{comps[i].matches[m].awayTeam.status}}">{{comps[i].matches[m].awayTeam.name | replace}}</td>
+                                <td class="name matchName homeTeam {{comps[i].matches[m].status}} {{comps[i].matches[m].homeTeam.status}}">{{comps[i].matches[m].homeTeam.name | replace}}</td>
+                                {% if config.logos %}
+                                    <td class="logo">
+                                        <img class="icon {% if not config.colored %}no-color{% endif %}" src="https://www.toralarm.com/api/proxy/images/ta/images/teams/{{ comps[i].matches[m].homeTeam.id }}/64/"/>
+                                    </td>
+                                {% endif %}
+                                <td class="status bold {{comps[i].matches[m].status}}">{{ comps[i].matches[m].state }}</td>
+                                {% if config.logos %}
+                                    <td class="logo">
+                                        <img class="icon {% if not config.colored %}no-color{% endif %}" src="https://www.toralarm.com/api/proxy/images/ta/images/teams/{{ comps[i].matches[m].awayTeam.id }}/64/"/>
+                                    </td>
+                                {% endif %}
+                                <td class="name matchName awayTeam {{comps[i].matches[m].status}} {{comps[i].matches[m].awayTeam.status}}">{{comps[i].matches[m].awayTeam.name | replace}}</td>
 							</tr>
+                            {% if comps[i].matches[m].scorers %}
+                                <tr class="xsmall matchDetails"><td colspan="5">{{ comps[i].matches[m].scorers | safe }}</td></tr>
+                            {% endif %}
 						{% endfor %}
 					</tbody>
 				</table>
@@ -55,10 +63,10 @@
 			</thead>
 			<tbody>
 				{% for i in range(boundaries.firstTeam, boundaries.lastTeam) %}
-					<tr class="centered-row {% if i === boundaries.focusTeamIndex %}bright{% endif %}" style="{{i | fade(boundaries.focusTeamIndex)}} background-color:{{table[i].marker_color}}">
+					<tr class="centered-row {% if i === boundaries.focusTeamIndex %}bright{% endif %}" style="{{i | fade(boundaries.focusTeamIndex)}} background-color:{{ table[i].marker_color }}66">
 						<td>{{i + 1}}</td>
 						{% if config.logos %}
-							<td class="logo"><img class="icon {% if not config.colored %}no-color{% endif %}" src="{{table[i].team.crestUrl}}"/></td>
+							<td class="logo"><img class="icon {% if not config.colored %}no-color{% endif %}" src="https://www.toralarm.com/api/proxy/images/ta/images/teams/{{ table[i].team_id }}/64/"/></td>
 						{% endif %}
 						<td class="name">{{table[i].team_name | replace}}</td>
 						<td class="centered">{{table[i].games}}</td>
