@@ -59,7 +59,7 @@ git clone https://github.com/lavolp3/MMM-soccer
 | `focus_on` | null | Which team to focus on per league. This needs to be an object, e.g. {'BL1': 'FC Bayern München', 'CL': 'Liverpool FC'}. **See description below.** |
 | `fadeFocus` | true | Includes fading the teams out if one is focused. |
 | `max_teams` | false | How many teams should be displayed when focus is activated. Omit this option or set to false to show the full league table. |
-| `replace` | 'default' | Choose between 'default' for a default replacement of original club names or 'short' for a 3-Letter-Code of the teams. Choose anything else (like '') for original team names from the API. **See below** for further information |
+| `view` | 'standard' | Choose between 'standard' for standard club name length, 'long' for complete club names, or 'short' for a very compressed 3-Letter-Code of the teams. 
 | `logos` | true | Boolean to show club logos. |
 | `liveMode` | true | Activates live mode when games are in play. (see below) |
 | `matchType` | 'league' | Choose between the following: `'league'` for showing the current matchday of selected leagues (in `show`), `'next'` for showing the next matches of all your focused clubs (in `focus_on`), `'daily'` for showing all of todays matches for selected leagues. |
@@ -85,8 +85,6 @@ Have a look into the `replace` object in the config to see if the team name is r
 Omitting a league code from `'show'` in this array will show the full league table and not include any focus.
 Any league included here need to be included in `'show'` as well to show the league on your mirror.
 
-## Replacements
-There is a `replacements.json` file in the directory including all teams of the free plan. By default, the default replacement for the original team name will be used in the module. You can choose between 'default' mode or 'short' mode showing the 3-letter ID code for the team for a super slim module.
 
 ## Live Mode
 
