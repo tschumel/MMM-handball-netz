@@ -23,7 +23,7 @@
 					<tbody>
 						{% for m in range(0, comps[i].matches.length) %}					
 							<tr class="centered-row {% if comps[i].matches[m].focused %}bright{% endif %}">
-							<td class="name matchName homeTeam {{comps[i].matches[m].status}} {{comps[i].matches[m].homeTeam.status}}">{{comps[i].matches[m].homeTeam.name | replace}}</td>
+							<td class="name matchName homeTeam {{comps[i].matches[m].status}} {{comps[i].matches[m].homeTeam.status}}">{{comps[i].matches[m].homeTeam | replace}}</td>
 							{% if config.logos %}
 								<td class="logo">
 									<img class="icon {% if not config.colored %}no-color{% endif %}" src="{{teams[comps[i].matches[m].homeTeam.id].crest}}"/>
@@ -33,7 +33,7 @@
 							{% if config.logos %}
 								<td class="logo"><img class="icon {% if not config.colored %}no-color{% endif %}" src="{{teams[comps[i].matches[m].awayTeam.id].crest}}"/></td>
 							{% endif %}
-							<td class="name matchName awayTeam {{comps[i].matches[m].status}} {{comps[i].matches[m].awayTeam.status}}">{{comps[i].matches[m].awayTeam.name | replace}}</td>
+							<td class="name matchName awayTeam {{comps[i].matches[m].status}} {{comps[i].matches[m].awayTeam.status}}">{{comps[i].matches[m].awayTeam | replace}}</td>
 							</tr>
 						{% endfor %}
 					</tbody>
@@ -69,7 +69,7 @@
 						{% if config.logos %}
 							<td class="logo"><img class="icon {% if not config.colored %}no-color{% endif %}" src="{{table[i].team.crest}}"/></td>
 						{% endif %}
-						<td class="name">{{table[i].team.name | replace}}</td>
+						<td class="name">{{table[i].team | replace}}</td>
 						<td class="centered">{{table[i].playedGames}}</td>
 						<td class="centered">{{table[i].points}}</td>
 						<td class="centered">{% if table[i].goalDifference > 0 %}+{% endif %}{{table[i].goalDifference}}</td>
