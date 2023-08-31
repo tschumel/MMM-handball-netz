@@ -1,7 +1,7 @@
 /**
  * @file MMM-soccer.js
  *
- * @author lavolp3/fewieden
+ * @authors lavolp3 and fewieden
  * @license MIT
  *
  * @see  https://github.com/lavolp3/MMM-soccer
@@ -36,7 +36,7 @@ Module.register('MMM-soccer', {
             SPAIN: 'PD',
             ITALY: 'SA'
         },
-        replace: 'default',     //choose 'default', 'short' or '' for original names
+        view: 'standard',  //choose 'standard', 'short' or 'long'
         daysOffset: 0,
         debug: false,
     },
@@ -62,14 +62,13 @@ Module.register('MMM-soccer', {
     matches: {},
     teams: {},
     matchDay: "",
-    showTable: true,
     leagues: [],
     liveMode: false,
     liveMatches: [],
     liveLeagues: [],
-    replacements: {
+    /*replacements: {
         default: {}
-    },
+    },*/
     competition: '',
 
 
@@ -78,18 +77,17 @@ Module.register('MMM-soccer', {
         this.addFilters();
         this.leagues = this.config.show;
         this.competition = this.leagues[0];
-        this.showTable = this.config.showTables;
         var self = this;
-        this.replacers = this.loadReplacements(response => {
+        /*this.replacers = this.loadReplacements(response => {
             self.replacements = JSON.parse(response);
             //self.log(self.replacements);
-        });
+        });*/
         this.sendSocketNotification('GET_SOCCER_DATA', this.config);
         this.scheduleDOMUpdates();
     },
 
 
-    loadReplacements: function(callback) {
+    /*loadReplacements: function(callback) {
         this.log("Loading replacements file");
         var xobj = new XMLHttpRequest();
         var path = this.file('replacements.json');
@@ -101,7 +99,7 @@ Module.register('MMM-soccer', {
             }
         };
         xobj.send(null);
-    },
+    },*/
 
 
     scheduleDOMUpdates: function () {
@@ -185,7 +183,7 @@ Module.register('MMM-soccer', {
             modals: this.modals,
             table: this.standing,
             comps: (Object.keys(this.matches).length > 0) ? this.prepareMatches(this.matches, this.config.focus_on[this.competition]) : "",
-            showTable: this.showTable,
+            showTable: (this.config.showTables && (!isNaN(this.matchDay))),
             teams: (Object.keys(this.tables).length > 0) ? this.teams : {},
             showMatchDay: this.config.showMatchDay,
             voice: this.voice
@@ -226,8 +224,7 @@ Module.register('MMM-soccer', {
                 }
             }
             this.log("Current matchday: " + this.matchDay);
-            this.showTable = (!isNaN(this.matchDay));
-    	    returnedMatches.push({
+            returnedMatches.push({
                 competition: (Object.keys(this.tables).length > 0) ? this.tables[this.competition].competition.name : "",
                 emblem: (Object.keys(this.tables).length > 0) ? this.tables[this.competition].competition.emblem : "",
                 season: (Object.keys(this.tables).length > 0) ? `${this.translate('MATCHDAY')}: ${this.translate(this.matchDay)}` : this.translate('LOADING'),
@@ -486,8 +483,8 @@ Module.register('MMM-soccer', {
         });
 
         njEnv.addFilter('replace', (team) => {
-            var replace = this.config.replace;
-            if ((replace == 'default' || replace == 'short') && (this.replacements.default.hasOwnProperty(team))) {
+            var view = this.config.view;
+            if ((view == 'standard' || view == 'short') && (this.replacements.default.hasOwnProperty(team))) {
                 return this.replacements[replace][team];
             } else {
                 return team;
