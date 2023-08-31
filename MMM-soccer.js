@@ -484,10 +484,10 @@ Module.register('MMM-soccer', {
 
         njEnv.addFilter('replace', (team) => {
             var view = this.config.view;
-            if ((view == 'standard' || view == 'short') && (this.replacements.default.hasOwnProperty(team))) {
-                return this.replacements[replace][team];
-            } else {
-                return team;
+            switch (view) {
+                case 'long': return team.name;
+                case 'short': return team.tla;
+                default: return team.shortName
             }
         });
     },
