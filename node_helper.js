@@ -59,6 +59,7 @@ module.exports = NodeHelper.create({
         }, updateInterval);
     },
 
+	// in progress
 	getClubTeams: function(clubs) {
 	// https://www.handball.net/a/sportdata/1/widgets/club/handball4all.schleswig-holstein.1501/schedule?	
         var self = this;

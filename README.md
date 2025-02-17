@@ -22,13 +22,49 @@ git clone https://github.com/tschumel/MMM-handball-netz
 2. Run command `npm install` in `~/MagicMirror/modules/MMM-handball-netz` directory.
 3. Add the module to your `~/MagicMirror/config/config.js`
 
+## Example config
+```
+{
+    module: 'MMM-handball-netz',
+    position: 'top_left',
+    config: {
+        show: [
+			'nuliga.hnr.151945#nuliga.hnr.390589', // A-Jugend männlich (Essen) 
+			'handball4all.westfalen.owl-l-mst2_wfow',
+			'handball4all.westfalen.hvw-fol1_hvwf',
+			'handball4all.westfalen.owl-l-fst2_wfow',
+			'sportradar.hbf.228', // 1HBL 
+			'sr.competition.149', // HBL
+			'sportradar.hbf.312', // 2HBL Frauen
+			'sr.competition.921', // 2HBL
+			],
+        colored: true,
+        updateInterval: 30,// Anzeigedauer pro Liga
+        max_teams: 5,
+        matchType: 'league', // 'next', 'league',
+		showMatches: true,
+		logos: true,
+		focus_on: {
+			'nuliga.hnr.151945#nuliga.hnr.390589' : 'LTV Wuppertal',
+			'handball4all.westfalen.owl-l-mst2_wfow': 'Union 92 Halle',
+			'handball4all.westfalen.hvw-fol1_hvwf': 'Union 92 Halle',
+			'handball4all.westfalen.owl-l-fst2_wfow': 'Union 92 Halle',
+			'sr.competition.149' : 'THW Kiel',
+			'sr.competition.921' : 'TuSEM Essen',
+			'sportradar.hbf.228' : 'Buxtehuder SV',
+			'sportradar.hbf.312' : 'SV Union Halle-Neustadt',
+			'handball4all.westfalen.hvw-mb-ol1_hvwf' : 'Union 92 Halle',
+		},		
+		liveMode: false	
+    }
+},
+```
 
 ## Config Options
 
 | **Option** | **Default** | **Description** |
 | --- | --- | --- |
 | `width` | `400` | Width of match and standings table. The module has a flexible design aligning matches and table vertically or horizontically as space allows. |
-| `api_key` | false | Either false (limited to 50 requests a day) or an API Key obtained from <http://api.football-data.org/register> (limited to 10 requests a minute) . |
 | `colored` | true | Boolean to show club logos in color or not. |
 | `show` | ['BL1', 'PL', 'CL'] | An array of league codes to be displayed. In normal mode, the leagues revolve using below update cycle. With activated touch mode (see below), you can choose one of the leagues via a button (planned) |
 | `updateInterval` | 60 | The time frame for each league to be shown in seconds. |
@@ -53,7 +89,7 @@ You can focus on one time per league/cup using the focus_on method. This variabl
 An example is below:
 ```
 focus_on: {
-    'ligaID': 'Favorit Teamname',
+	'sr.competition.149' : 'THW Kiel',
 },
 ```
 Please take care to include all quotation marks, separate with commata, and use the same league codes (find below) you have included in the 'show' array.
@@ -65,8 +101,11 @@ Any league included here need to be included in `'show'` as well to show the lea
 
 ## Replacements
 There is a `replacements.json` file in the directory including all teams of the free plan. By default, the default replacement for the original team name will be used in the module. You can choose between 'default' mode or 'short' mode showing the 3-letter ID code for the team for a super slim module.
+There is no need to add Teams with different Teamnumbers in the replacments.json File
+Example Entry:	"JSG Handball Löhne-Mennighüffen-Obernbeck":"JSG Handball LöhMeOb",
+Will also replace SG Handball Löhne-Mennighüffen-Obernbeck 3 => JSG Handball LöhMeOb 3 and so on.
 
-## Live Mode 
+## Live Mode (planned)
 
 The module calls all requested matches every X minutes (see config option `apiCallInterval`). Whenever one or more matches are scheduled in less than this interval, a Live Mode will activate.
 All matches currently played will be included in an array and requested once every minute.
