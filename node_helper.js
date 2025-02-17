@@ -36,7 +36,7 @@ module.exports = NodeHelper.create({
 			this.clubs = this.config.clubs;
             this.leagues = this.config.show;
             this.headers = {};
-			this.getClubTeams(this.clubs);
+			//this.getClubTeams(this.clubs);
             this.getTables(this.leagues);
             this.getMatches(this.leagues);
             if (!this.isRunning) {
