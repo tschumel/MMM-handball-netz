@@ -20,54 +20,7 @@ A Handball Standings Module for MagicMirror², based on @fewiedens [MMM-soccer](
 git clone https://github.com/tschumel/MMM-handball-netz
 ```
 2. Run command `npm install` in `~/MagicMirror/modules/MMM-handball-netz` directory.
-3. Add the module to your `~/MagicMirror/config/config.js`:
-
-    ```
-{
-    module: 'MMM-handball-netz',
-    position: 'top_left',
-    config: {
-        show: [
-			'nuliga.hnr.151945', // A-Jugend männlich (Essen) 
-			'handball4all.westfalen.owl-l-mst2_wfow',
-			'handball4all.westfalen.hvw-fol1_hvwf',
-			'handball4all.westfalen.hvw-mb-ol1_hvwf',
-			'handball4all.westfalen.owl-l-fst2_wfow',
-			'sportradar.hbf.228', // 1HBL 
-			'sr.competition.149', // HBL
-			'sportradar.hbf.312', // 2HBL Frauen
-			'sr.competition.921', // 2HBL
-			'handball4all.ol-hamburg-schleswig-holstein.wja-rln_hrn',
-			],
-        colored: true,
-        updateInterval: 15,// Anzeigedauer pro Liga
-        max_teams: 5,
-        matchType: 'league', // 'next', 'league',
-		showMatches: true,
-		logos: true,
-		focus_on: {
-			'nuliga.hnr.151945' : 'LTV Wuppertal',
-			'sportradar.dhbdata.15984#sportradar.dhbdata.17742' : 'MTV Lübeck',
-			'sportradar.dhbdata.15945#sportradar.dhbdata.17780' : 'Handewitter SV',
-			'handball4all.ol-hamburg-schleswig-holstein.wja-rln_hrn':  'MTV Dänischenhagen',
-			'handball4all.westfalen.owl-l-mst2_wfow': 'Union 92 Halle',
-			'handball4all.westfalen.hvw-fol1_hvwf': 'Union 92 Halle',
-			'sr.competition.149' : 'THW Kiel',
-			'sr.competition.921' : 'TuSEM Essen',
-			'sportradar.hbf.228' : 'Buxtehuder SV',
-			'sportradar.hbf.312' : 'SV Union Halle-Neustadt',
-			'handball4all.westfalen.hvw-mb-ol1_hvwf' : 'Union 92 Halle',
-			'sportradar.dhbdata.16059#sportradar.dhbdata.18130' : 'TSV Altenholz',
-			'handball4all.ol-hamburg-schleswig-holstein.m-rln_hrn':'MTV Lübeck',
-			//'sportradar.dhbdata.16059': 'EHV Aue'
-		},		
-		liveMode: true	
-    }
-},
-    ```
-
-
-4. Optional: Get a free api key [here](http://api.football-data.org/register) (highly recommended)
+3. Add the module to your `~/MagicMirror/config/config.js`
 
 
 ## Config Options
@@ -100,8 +53,7 @@ You can focus on one time per league/cup using the focus_on method. This variabl
 An example is below:
 ```
 focus_on: {
-    'BL1': 'FC Bayern München',
-    'CL': 'Liverpool FC'
+    'ligaID': 'Favorit Teamname',
 },
 ```
 Please take care to include all quotation marks, separate with commata, and use the same league codes (find below) you have included in the 'show' array.
@@ -114,7 +66,7 @@ Any league included here need to be included in `'show'` as well to show the lea
 ## Replacements
 There is a `replacements.json` file in the directory including all teams of the free plan. By default, the default replacement for the original team name will be used in the module. You can choose between 'default' mode or 'short' mode showing the 3-letter ID code for the team for a super slim module.
 
-## Live Mode
+## Live Mode 
 
 The module calls all requested matches every X minutes (see config option `apiCallInterval`). Whenever one or more matches are scheduled in less than this interval, a Live Mode will activate.
 All matches currently played will be included in an array and requested once every minute.
@@ -135,43 +87,14 @@ Can be switched off in config.
 
 ## OPTIONAL: Voice Control (may be bugged!)
 
-This module supports voice control by @fewiedens [MMM-voice](https://github.com/fewieden/MMM-voice). In order to use this feature, it's required to install the voice module. There are no extra config options for voice control needed.
-
 
 ### Mode
 
-The voice control mode for this module is `SOCCER`
 
 ### List of all Voice Commands
 
-* OPEN HELP -> Shows the information from the readme here with mode and all commands.
-* CLOSE HELP -> Hides the help information.
-* SHOW STANDINGS OF COUNTRY NAME -> Switch standings to specific league.
-  Valid country names are (Default: GERMANY, FRANCE, ENGLAND, SPAIN or ITALY)
-  set in config. (Effect stays until your mirror restarts, for permanent change
-  you have to edit the config)
-* EXPAND VIEW -> Expands the standings table and shows all teams.
-* COLLAPSE VIEW -> Collapse the expanded view.
-
 
 ## List of available leagues (for the free API):
-
-As per the [Football-data API Docs](https://www.football-data.org/documentation/api#league-codes):
-
-
-| **League** | **Code** |
-| --- | --- |
-| (Europe) Champions League | 'CL' |
-| (Europe) European Championship 2020 | 'EC' |
-| (English) Premier League | 'PL' |
-| (English) Championship | 'ELC' |
-| (German) Bundesliga | 'BL1' |
-| (Italian) Serie A | 'SA' |
-| (French) Ligue 1 | 'FL1' |
-| (Spain) La Liga | 'PD' |
-| (Portugal) Primiera Liga | 'PPL' |
-| (Netherlands) Eredivisie | 'DED' |
-| (Brazil) Serie A | '' |
 
 
 ### TODOs
