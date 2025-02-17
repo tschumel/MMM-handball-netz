@@ -12,7 +12,8 @@
 const axios = require('axios');
 const NodeHelper = require('node_helper');
 const moment = require('moment');
-
+var phase;
+var phaseName;
 module.exports = NodeHelper.create({
 
     matches: {},
@@ -29,11 +30,13 @@ module.exports = NodeHelper.create({
 
 
     socketNotificationReceived: function(notification, payload) {
-        if (notification === 'GET_SOCCER_DATA') {
+        if (notification === 'GET_HANDBALL_DATA') {
             this.log("Socket notification received: " + notification + " Payload: " + JSON.stringify(payload));
             this.config = payload;
+			this.clubs = this.config.clubs;
             this.leagues = this.config.show;
-            this.headers = payload.api_key ? { 'X-Auth-Token': payload.api_key } : {};
+            this.headers = {};
+			this.getClubTeams(this.clubs);
             this.getTables(this.leagues);
             this.getMatches(this.leagues);
             if (!this.isRunning) {
@@ -56,21 +59,82 @@ module.exports = NodeHelper.create({
         }, updateInterval);
     },
 
+	getClubTeams: function(clubs) {
+	// https://www.handball.net/a/sportdata/1/widgets/club/handball4all.schleswig-holstein.1501/schedule?	
+        var self = this;
+		var isoWeek = moment().isoWeek();   
+        this.log("API-Call: Collecting leagues for clubs: "+clubs);		
+        var urlArray = clubs.map(club => { 
+			var apiUrl = "https://www.handball.net/a/sportdata/1/widgets/club/"+ club +"/schedule?";
+			return apiUrl; 
+		});
+		Promise.all(urlArray.map(url => {
+            return axios.get(url, { headers: self.headers})
+            .then(function (response) {
+                self.log("Requests available:");
+				let urlObj = new URL(url);
+				let urlPara = new URLSearchParams(urlObj.search);
+				var clubData = response.data;
+				/*
+				var clubTeamsLeagues = {
+					
+				}
+				*/
+            })
+            .catch(function (error) {
+                self.handleErrors(error, url);
+                return {};
+            });
+			
+		}));		
+	},
+
     getTables: function(leagues) {
         var self = this;
-        this.log("Collecting league tables for leagues: "+leagues);
-        var urlArray = leagues.map(league => { return `http://api.football-data.org/v4/competitions/${league}/standings`; });
+		var isoWeek = moment().isoWeek();   
+        this.log("API-Call: Collecting tables for leagues: "+leagues);
+		
+        var urlArray = leagues.map(league => { 
+			var params = league.split('#');
+			var apiUrl = "https://www.handball.net/a/sportdata/1/widgets/tournament/"+ params[0] +"/table?";
+			phase = params.length > 1 ? params[1] :"";
+			if (phase) apiUrl = apiUrl + "phase=" + phase;
+			return apiUrl; 
+		});
         Promise.all(urlArray.map(url => {
-            return axios.get(url, { headers: self.headers })
+            return axios.get(url, { headers: self.headers})
             .then(function (response) {
-                self.log("Requests available: " + response.headers["x-requests-available-minute"]);
+                self.log("Requests available:");
+				let urlObj = new URL(url);
+				let urlPara = new URLSearchParams(urlObj.search);
+				
                 var tableData = response.data;
-                var tables = {
-                    competition: tableData.competition,
-                    season: tableData.season,
-                    standings: tableData.standings,
-                };
-                self.log(tables);
+	            var tables = {
+					  competition: {
+						id: tableData.tournament.id,
+						phase: urlPara.get("phase"),
+						name: tableData.table.tournament.name,
+						phaseName: null,
+						code: tableData.tournament.id,
+						type: 'LEAGUE',
+						emblem: tableData.table.tournament.logo.replace("handball-net:", "https://www.handball.net/"),
+					  },
+ 					  season: {
+						id: tableData.tournament.id,
+						startDate: null,//'2024-08-23',
+						endDate:  null,//'2025-05-17',
+						currentMatchday: isoWeek,
+						winner: null
+					  },
+					  standings: [
+						{
+						  stage: 'REGULAR_SEASON',
+						  type: 'TOTAL',
+						  group: null,
+						  table: tableData.table.rows
+						}
+					  ]
+                };			
                 return(tables);
             })
             .catch(function (error) {
@@ -79,46 +143,59 @@ module.exports = NodeHelper.create({
             });
         }))
         .then(function(tableArray) {
-            tableArray.forEach(tables => {
+           tableArray.forEach(tables => {
                 if (tables.hasOwnProperty('standings')) {
-                    tables.standings.forEach(standing => {
-                        standing.table.forEach(team => {
-                            self.teams[team.team.id] = team.team;
-                            self.teamList[team.team.name] = team.team.name;
+                    tables.standings.forEach(standing => {						
+						standing.table.forEach(team => {
+                            self.teams[team.id] = team;
+                            self.teamList[team.name] = team.name;
                         });
                     });
-                    self.tables[tables.competition.code] = tables;
+					if(tables.competition.phase) self.tables[tables.competition.code+"#"+tables.competition.phase] = tables;
+                    else self.tables[tables.competition.code] = tables;
                  }
             });
-            //self.log("Collected Tables: " + self.tables);
-            self.log("Collected Teams: " + JSON.stringify(self.teams));
+			
             self.sendSocketNotification("TABLES", self.tables);
             self.sendSocketNotification("TEAMS", self.teams);
         })
-        /*.catch(function(error) {
-            console.error("[MMM-soccer] ERROR occured while fetching tables: " + error);
-        });*/
+        .catch(function(error) {
+            console.error("[MMM-handball-netz] ERROR occured while fetching tables: " + error);
+        });
     },
 
-    getMatches:function(leagues) {
+
+    getMatches: function(leagues) {
         var now = moment().subtract(60*13, "minutes");	//subtract minutes or hours to test live mode
-        this.log("Collecting matches for leagues: " + leagues);
-        var urlArray = leagues.map(league => { return `http://api.football-data.org/v4/competitions/${league}/matches`; });
+        this.log("API-Call: Collecting matches for leagues " + leagues);
+        var urlArray = leagues.map(league => { 		
+			var params = league.split('#');
+			var apiUrl = "https://www.handball.net/a/sportdata/1/widgets/tournament/"+ params[0] +"/schedule?";
+			phase = params.length > 1 ? params[1] :"";
+			if (phase) apiUrl = apiUrl + "phase=" + phase;
+			return apiUrl; 
+		});
         this.liveLeagues = [];
         var self = this;
+
         Promise.all(urlArray.map(url => {
             return axios.get(url, { headers: self.headers })
             .then(function (response) {
-                //self.log("Requests available: " + response.headers["x-requests-available-minute"]);
+				let urlObj = new URL(url);
+				let urlPara = new URLSearchParams(urlObj.search);				
                 var matchesData = response.data;
-                var currentLeague = matchesData.competition.code;
-                matchesData.matches.forEach(match => {
-                    delete match.referees;
-
+                var currentLeague = matchesData.tournament.id;	
+				phaseName = ""; // Steht in matchesData.schedule.data...match.phase !!!!!!
+				phase = null;
+				if(urlPara.get("phase")) currentLeague+"#"+urlPara.get("phase");				
+                matchesData.schedule.data.forEach(match => {
+					phase = match.hasOwnProperty('phase') ? match.phase.id : ""; // Warum muss phase global declariert werden?
+					phaseName = match.hasOwnProperty('phase') ? match.phase.name : ""; // Warum muss phaseName global declariert werden?
+                    //delete match.referees;
                     //check for live matches
-                    if (match.status == "IN_PLAY" || Math.abs(moment(match.utcDate).diff(now, 'seconds')) < self.config.apiCallInterval * 2) {
+                    if (match.state == "Live" || Math.abs(moment(match.startsAt).diff(now, 'seconds')) < self.config.apiCallInterval * 2) {
                         if (self.liveMatches.indexOf(match.id) === -1) {
-                            self.log(`Live match detected starting at ${moment(match.utcDate).format("HH:mm")}, Home Team: ${match.homeTeam.name}`);
+                            self.log(`Live match detected starting at ${moment(match.match.startsAt).format("HH:mm")}, Home Team: ${match.homeTeam.name}`);
                             self.log(`Live match ${match.id} added at ${moment().format("HH:mm")}`);
                             self.liveMatches.push(match.id);
                         }
@@ -133,8 +210,21 @@ module.exports = NodeHelper.create({
                         }
                     }
                 });
-                return(matchesData);
-                self.log(matchesData);
+
+				var handballMatches = {
+						competition: {
+							id : matchesData.tournament.id,
+							name: matchesData.tournament.name,
+							phase: urlPara.get("phase"),//phase
+							phaseName: phaseName,
+							code: matchesData.tournament.id,
+							type: "LEAGUE",
+							emblem: matchesData.tournament.logo.replace("handball-net:", "https://www.handball.net/")
+						},
+						matches : matchesData.schedule.data ,
+						filters : {season: "2024"}, // No Season Infos in hnet, so setting to magic number Season 2024-2025
+				};
+                return(handballMatches);
             })
             .catch(function (error) {
                 self.handleErrors(error, url);
@@ -144,25 +234,28 @@ module.exports = NodeHelper.create({
         .then(function (matchesArray) {
             matchesArray.forEach(comp => {
                 if (comp.hasOwnProperty('competition')) {
-                    self.matches[comp.competition.code] = comp;
+					if(comp.competition.phase) self.matches[comp.competition.code+"#"+comp.competition.phase] = comp;
+                    else self.matches[comp.competition.code] = comp;
                 }
             });
-            //self.log(self.matches);
             self.log("Live matches: "+JSON.stringify(self.liveMatches));
             self.log("Live leagues: "+JSON.stringify(self.liveLeagues));
             self.sendSocketNotification("MATCHES", self.matches);
             self.toggleLiveMode(self.liveMatches.length > 0);
         })
         .catch(function(error) {
-            console.error("[MMM-soccer] ERROR occured while fetching matches: " + error);
+            console.error("[MMM-handball-netz] ERROR occured while fetching matches: " + error);
         });
     },
 
+/*
+	Wird noch nicht genutzt !
 
     getMatchDetails: function (matches) {
         var self = this;
-        this.log("Getting match details for matches: " + matches);
-        var urlArray = matches.map(match => { return `http://api.football-data.org/v2/matches/${match}`; });
+        this.log("fkt getMatchDetails Getting match details for (${league}) matches: " + matches);
+        //var urlArray = matches.map(match => { return `http://api.football-data.org/v2/matches/${match}`; });
+        var urlArray = matches.map(match => { return `https://www.handball.net/a/sportdata/1/widgets/tournament/${league}/schedule?`; });
         Promise.all(urlArray.map(url => {
             return axios.get(url, { headers: self.headers })
             .then(function (response) {
@@ -182,20 +275,21 @@ module.exports = NodeHelper.create({
             });
         }))
         .then(function (liveMatchesArray) {
-            /*LiveMatchesArray.forEach(match => {
-                liveMatches[match.match.competition.id] = match;
-            });*/
+            //LiveMatchesArray.forEach(match => {
+            //    liveMatches[match.match.competition.id] = match;
+            // });
             self.sendSocketNotification("LIVE_MATCHES", liveMatchesArray);
         });
     },
+*/
 
     handleErrors: function(error, url) {
         console.log("An error occured while requesting the API for Data: "+error);
         console.log("URL: "+url);
         if (error.response && error.response.status === 429) {
-            console.log(error.response.status + ": API Request Quota of 10 calls per minute exceeded. Try selecting less leagues.");
+            console.log(error.response.status + ": API Request Quota per minute exceeded. Try selecting less leagues.");
         } else if (error.request) {
-            //console.log(error.request);
+            console.log(error.request);
         } else {
             // Something happened in setting up the request that triggered an Error
             console.log('Error: ', error.message);

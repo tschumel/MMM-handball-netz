@@ -1,6 +1,6 @@
-# MMM-soccer [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://raw.githubusercontent.com/fewieden/MMM-soccer/master/LICENSE)
+# MMM-handball-netz [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://raw.githubusercontent.com/fewieden/MMM-handball-netz/master/LICENSE)
 
-A Soccer Standings Module for MagicMirror², based on @fewiedens [MMM-soccer](https://github.com/fewieden/MMM-soccer)
+A Handball Standings Module for MagicMirror², based on @fewiedens [MMM-soccer](https://github.com/fewieden/MMM-handball-netz)
 
 ## Examples
 
@@ -17,27 +17,53 @@ A Soccer Standings Module for MagicMirror², based on @fewiedens [MMM-soccer](ht
 
 1. Clone this repo into your `~/MagicMirror/modules` directory.
 ```
-git clone https://github.com/lavolp3/MMM-soccer
+git clone https://github.com/tschumel/MMM-handball-netz
 ```
-2. Run command `npm install` in `~/MagicMirror/modules/MMM-soccer` directory.
+2. Run command `npm install` in `~/MagicMirror/modules/MMM-handball-netz` directory.
 3. Add the module to your `~/MagicMirror/config/config.js`:
 
     ```
-    {
-        module: 'MMM-soccer',
-        position: 'top_left',
-        config: {
-            api_key: '',
-            show: ['CL', 'BL1', 'PL'],
-            colored: true,
-            updateInterval: 60,
-            focus_on: {
-                null
-            },
-            max_teams: 5,
-            matchType: 'league'
-        }
-    },
+{
+    module: 'MMM-handball-netz',
+    position: 'top_left',
+    config: {
+        show: [
+			'nuliga.hnr.151945', // A-Jugend männlich (Essen) 
+			'handball4all.westfalen.owl-l-mst2_wfow',
+			'handball4all.westfalen.hvw-fol1_hvwf',
+			'handball4all.westfalen.hvw-mb-ol1_hvwf',
+			'handball4all.westfalen.owl-l-fst2_wfow',
+			'sportradar.hbf.228', // 1HBL 
+			'sr.competition.149', // HBL
+			'sportradar.hbf.312', // 2HBL Frauen
+			'sr.competition.921', // 2HBL
+			'handball4all.ol-hamburg-schleswig-holstein.wja-rln_hrn',
+			],
+        colored: true,
+        updateInterval: 15,// Anzeigedauer pro Liga
+        max_teams: 5,
+        matchType: 'league', // 'next', 'league',
+		showMatches: true,
+		logos: true,
+		focus_on: {
+			'nuliga.hnr.151945' : 'LTV Wuppertal',
+			'sportradar.dhbdata.15984#sportradar.dhbdata.17742' : 'MTV Lübeck',
+			'sportradar.dhbdata.15945#sportradar.dhbdata.17780' : 'Handewitter SV',
+			'handball4all.ol-hamburg-schleswig-holstein.wja-rln_hrn':  'MTV Dänischenhagen',
+			'handball4all.westfalen.owl-l-mst2_wfow': 'Union 92 Halle',
+			'handball4all.westfalen.hvw-fol1_hvwf': 'Union 92 Halle',
+			'sr.competition.149' : 'THW Kiel',
+			'sr.competition.921' : 'TuSEM Essen',
+			'sportradar.hbf.228' : 'Buxtehuder SV',
+			'sportradar.hbf.312' : 'SV Union Halle-Neustadt',
+			'handball4all.westfalen.hvw-mb-ol1_hvwf' : 'Union 92 Halle',
+			'sportradar.dhbdata.16059#sportradar.dhbdata.18130' : 'TSV Altenholz',
+			'handball4all.ol-hamburg-schleswig-holstein.m-rln_hrn':'MTV Lübeck',
+			//'sportradar.dhbdata.16059': 'EHV Aue'
+		},		
+		liveMode: true	
+    }
+},
     ```
 
 
