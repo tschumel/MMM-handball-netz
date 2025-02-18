@@ -20,36 +20,27 @@ A Handball Standings Module for MagicMirror², based on @fewiedens [MMM-soccer](
 git clone https://github.com/tschumel/MMM-handball-netz
 ```
 2. Run command `npm install` in `~/MagicMirror/modules/MMM-handball-netz` directory.
+
 3. Add the module to your `~/MagicMirror/config/config.js`
+You can copy & paste the example configuration below into your config.js File. It's a good starting point to cusomize your MMM-handball-netz instance.
 
-## Determine the league-ID and league-phase of the league-schedule
+## Update
 
-First find the league-ID of your favorit League in handball.net. Double check that you have actually accessed the league schedule and not the schedule of your favorite team!
-The URL should be structured as follows:
+1. In your terminal, go to your MMM-handball-netz's Module folder:
+```
+cd ~/MagicMirror/modules/MMM-handball-netz
+```
+2. Incorporate changes from this repository:
 
-`https://<DOMAIN>/widgets/ligen/<LEAGUE-ID>/spielplan`
+```
+git pull
+```
 
-Example URL:
-`https://www.handball.net/widgets/ligen/handball4all.westfalen.owl-l-mst2_wfow/spielplan`
+3. Install dependencies:
 
-add the ID in the section of the MMM-handball-netz config.js section as below:
-
-`'<LEAGUE-ID>'`
-Example:
-`'handball4all.westfalen.owl-l-mst2_wfow'`
-
-If the league is divided into different groups, sequences or phases, you must also select the desired phase:
-
-`https://<DOMAIN>/widgets/ligen/<LEAGUE-ID>/spielplan?phase=<PHASE-ID>`
-
-Example URL:
-`https://www.handball.net/ligen/nuliga.bhv.157572/spielplan?phase=nuliga.bhv.379017`
-
-the resulting ID you have to specify in the config.js is the LEAGUE-ID followed by a hash-symbol (#) and the PHASE-ID
-`'<LEAGUE-ID>#<PHASE-ID>'`
-Example:
-`'nuliga.bhv.157572#nuliga.bhv.379017'`
-
+```
+npm install
+```
 
 
 ## Example config
@@ -88,6 +79,45 @@ Example:
 		liveMode: false	
     }
 },
+```
+
+## Determine the league-ID and league-phase of the league-schedule
+
+First find the league-ID of your favorit League in handball.net. Double check that you have actually accessed the league schedule and not the schedule of your favorite team!
+The URL should be structured as follows:
+```
+`https://<DOMAIN>/widgets/ligen/<LEAGUE-ID>/spielplan`
+```
+Example URL:
+```
+`https://www.handball.net/widgets/ligen/handball4all.westfalen.owl-l-mst2_wfow/spielplan`
+```
+add the ID in the section of the MMM-handball-netz config.js section as below:
+```
+`'<LEAGUE-ID>'`
+```
+Example:
+```
+`'handball4all.westfalen.owl-l-mst2_wfow'`
+```
+
+If the league is divided into different groups, sequences or phases, you must also select the desired phase:
+```
+`https://<DOMAIN>/widgets/ligen/<LEAGUE-ID>/spielplan?phase=<PHASE-ID>`
+```
+
+Example URL:
+```
+`https://www.handball.net/ligen/nuliga.bhv.157572/spielplan?phase=nuliga.bhv.379017`
+```
+
+the resulting ID you have to specify in the config.js is the LEAGUE-ID followed by a hash-symbol (#) and the PHASE-ID
+```
+`'<LEAGUE-ID>#<PHASE-ID>'`
+```
+Example:
+```
+`'nuliga.bhv.157572#nuliga.bhv.379017'`
 ```
 
 ## Config Options
