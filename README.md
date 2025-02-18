@@ -64,7 +64,7 @@ Example:
 			'handball4all.westfalen.hvw-fol1_hvwf',
 			'handball4all.westfalen.owl-l-fst2_wfow',
 			'sportradar.hbf.228', // 1HBL 
-			'sr.competition.149', // HBL
+			'sr.competition.149', // HBL 
 			'sportradar.hbf.312', // 2HBL Frauen
 			'sr.competition.921', // 2HBL
 			],
@@ -96,7 +96,7 @@ Example:
 | --- | --- | --- |
 | `width` | `400` | Width of match and standings table. The module has a flexible design aligning matches and table vertically or horizontically as space allows. |
 | `colored` | true | Boolean to show club logos in color or not. |
-| `show` | ['BL1', 'PL', 'CL'] | An array of league codes to be displayed. In normal mode, the leagues revolve using below update cycle. With activated touch mode (see below), you can choose one of the leagues via a button (planned) |
+| `show` | ['sportradar.hbf.228', 'sr.competition.149', 'sportradar.hbf.312', 'sr.competition.921'] | An array of league codes to be displayed. In normal mode, the leagues revolve using below update cycle. With activated touch mode (see below), you can choose one of the leagues via a button (planned) |
 | `updateInterval` | 60 | The time frame for each league to be shown in seconds. |
 | `apiCallInterval` | 10 | The time frame for API calls (in minutes) in normal mode. |
 | `showMatches` | true | Show matches of current league |
@@ -106,8 +106,8 @@ Example:
 | `max_teams` | false | How many teams should be displayed when focus is activated. Omit this option or set to false to show the full league table. |
 | `replace` | 'default' | Choose between 'default' for a default replacement of original club names or 'short' for a 3-Letter-Code of the teams. Choose anything else (like '') for original team names from the API. **See below** for further information |
 | `logos` | true | Boolean to show club logos. |
-| `liveMode` | true | Activates live mode when games are in play. (see below) |
-| `matchType` | 'league' | Choose between the following: `'league'` for showing the current matchday of selected leagues (in `show`), `'next'` for showing the next matches of all your focused clubs (in `focus_on`), `'daily'` for showing all of todays matches for selected leagues. |
+| `liveMode` | true | Activates live mode when games are in play. (planned) (see below) |
+| `matchType` | 'league' | In the moment only Leagues are provided: `'league'` for showing the current matchday of selected leagues (in `show`) |
 | `numberOfNextMatches` | 8 | Defines number of next matches of all focused clubs for matchType `'next'` |
 | `touchMode` | false | Activates touch mode with touch options (see below, not active yet) |
 | `debug` | false | Debug mode: additional output on server side (console) and client side (browser) |
@@ -115,7 +115,7 @@ Example:
 
 ## Focus
 
-You can focus on one time per league/cup using the focus_on method. This variable needs to be an object.
+You can focus on one time per league using the focus_on method. This variable needs to be an object.
 An example is below:
 ```
 focus_on: {
@@ -131,9 +131,12 @@ Any league included here need to be included in `'show'` as well to show the lea
 
 ## Replacements
 There is a `replacements.json` file in the directory including all teams of the free plan. By default, the default replacement for the original team name will be used in the module. You can choose between 'default' mode or 'short' mode showing the 3-letter ID code for the team for a super slim module.
-There is no need to add Teams with different Teamnumbers in the replacments.json File
+There is no need to add Teams with different Team-Numbers in the replacments.json File
 Example Entry:	"JSG Handball Löhne-Mennighüffen-Obernbeck":"JSG Handball LöhMeOb",
 Will also replace SG Handball Löhne-Mennighüffen-Obernbeck 3 => JSG Handball LöhMeOb 3 and so on.
+
+Also roman Numbers will be detected as Team-Numbers: "TuS 97 Bielefeld/Jöllenbeck":"TuS Bielefeld-Jöllenbeck",
+Will also replace TuS 97 Bielefeld/Jöllenbeck II => TuS Bielefeld-Jöllenbeck II and so on.
 
 ## Live Mode (planned)
 
@@ -163,19 +166,8 @@ Can be switched off in config.
 ### List of all Voice Commands
 
 
-## List of available leagues (for the free API):
-
-
 ### TODOs
 
-- [ ] Current top scorer list per league
 - [ ] Touch mode
-- [ ] Tap additional API (presumably API-football) for further competitions (e.g. DFB cup)
-- [ ] Option to show fixed table head with focus on.
 - [x] Highlight currently playing teams in table.
 
-
-Add team specific data, e.g.
-- [ ] next matches
-- [ ] ~current squad / line-up~ not available in free plan!
-- [ ] ~Include option to show scorers for each match~ not available in free plan!
