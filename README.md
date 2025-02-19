@@ -26,6 +26,8 @@ You can copy & paste the example configuration below into your config.js File. I
 
 ## Update
 
+If You have made any individual changes of the `replacements.json` file , make shure to backup the file. After the update please replace the original file with your backup !!!
+
 1. In your terminal, go to your MMM-handball-netz's Module folder:
 ```
 cd ~/MagicMirror/modules/MMM-handball-netz
@@ -160,7 +162,7 @@ Omitting a league code from `'show'` in this array will show the full league tab
 Any league included here need to be included in `'show'` as well to show the league on your mirror.
 
 ## Replacements
-There is a `replacements.json` file in the directory including all teams of the free plan. By default, the default replacement for the original team name will be used in the module. You can choose between 'default' mode or 'short' mode showing the 3-letter ID code for the team for a super slim module.
+There is a `replacements.json` file in the directory including some example of original team names with shortend spellings. By default, the default replacement for the original team name will be used in the module. You can choose between 'default' mode or 'short' mode showing the 3-letter ID code for the team for a super slim module.
 There is no need to add Teams with different Team-Numbers in the replacments.json File
 Example Entry:	"JSG Handball Löhne-Mennighüffen-Obernbeck":"JSG Handball LöhMeOb",
 Will also replace SG Handball Löhne-Mennighüffen-Obernbeck 3 => JSG Handball LöhMeOb 3 and so on.
