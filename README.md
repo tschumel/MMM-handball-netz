@@ -86,7 +86,7 @@ npm install
 First find the league-ID of your favorit League in handball.net. Double check that you have actually accessed the league schedule and not the schedule of your favorite team!
 The URL should be structured as follows:
 ```
-`https://<DOMAIN>/widgets/ligen/<LEAGUE-ID>/spielplan`
+`https://<DOMAIN>/ligen/<LEAGUE-ID>/spielplan`
 ```
 Example URL:
 ```
