@@ -90,7 +90,7 @@ The URL should be structured as follows:
 ```
 Example URL:
 ```
-`https://www.handball.net/widgets/ligen/handball4all.westfalen.owl-l-mst2_wfow/spielplan`
+`https://www.handball.net/ligen/handball4all.westfalen.owl-l-mst2_wfow/spielplan`
 ```
 add the ID in the section of the MMM-handball-netz config.js section as below:
 ```
@@ -103,7 +103,7 @@ Example:
 
 If the league is divided into different groups, sequences or phases, you must also select the desired phase:
 ```
-`https://<DOMAIN>/widgets/ligen/<LEAGUE-ID>/spielplan?phase=<PHASE-ID>`
+`https://<DOMAIN>/ligen/<LEAGUE-ID>/spielplan?phase=<PHASE-ID>`
 ```
 
 Example URL:
