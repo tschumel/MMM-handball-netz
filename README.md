@@ -187,14 +187,9 @@ It is also planned to include more detailed information like scorers per league 
 Can be switched off in config.
 
 
-## OPTIONAL: Voice Control (may be bugged!)
+## Known Bugs
 
-
-### Mode
-
-
-### List of all Voice Commands
-
+Games currently being played are missing in the provided JSON. So for now there will be only played and upcoming Games visible. No Live Games available in the moment. Bug is reported, but it's not clear when the provider will fix the problem.
 
 ### TODOs
 
