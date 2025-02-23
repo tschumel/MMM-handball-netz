@@ -85,8 +85,9 @@ npm install
 
 ## Determine the league-ID and league-phase of the league-schedule
 
-First find the league-ID of your favorit League in handball.net. Double check that you have actually accessed the league schedule and not the schedule of your favorite team!
-The URL should be structured as follows:
+First find the league-ID of your favorit League in the Portal handball.net. Open the URl to the Portal in your Browser. Navigate to your favorit league schedule. Only the league schedule includes upcomming games for all Teams. So double check that you have actually accessed the league schedule and not the schedule of your favorite team!
+
+The URL in the Browser should be structured as follows:
 ```
 `https://<DOMAIN>/ligen/<LEAGUE-ID>/spielplan`
 ```
@@ -103,7 +104,8 @@ Example:
 `'handball4all.westfalen.owl-l-mst2_wfow'`
 ```
 
-If the league is divided into different groups, sequences or phases, you must also select the desired phase:
+If the league is divided into different groups, sequences or phases, you must also select the desired phase in the selection area at the top of the Page:
+If you selected a phase, the URL in Browser should cheanged to something like the following structure.
 ```
 `https://<DOMAIN>/ligen/<LEAGUE-ID>/spielplan?phase=<PHASE-ID>`
 ```
