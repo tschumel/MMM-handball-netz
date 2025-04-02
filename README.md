@@ -26,6 +26,8 @@ You can copy & paste the example configuration below into your config.js File. I
 
 ## Update
 
+If You have made any individual changes of the `replacements.json` file , make shure to backup the file. After the update please replace the original file with your backup !!!
+
 1. In your terminal, go to your MMM-handball-netz's Module folder:
 ```
 cd ~/MagicMirror/modules/MMM-handball-netz
@@ -83,14 +85,15 @@ npm install
 
 ## Determine the league-ID and league-phase of the league-schedule
 
-First find the league-ID of your favorit League in handball.net. Double check that you have actually accessed the league schedule and not the schedule of your favorite team!
-The URL should be structured as follows:
+First find the league-ID of your favorit League in the Portal handball.net. Open the URl to the Portal in your Browser. Navigate to your favorit league schedule. Only the league schedule includes upcomming games for all Teams. So double check that you have actually accessed the league schedule and not the schedule of your favorite team!
+
+The URL in the Browser should be structured as follows:
 ```
-`https://<DOMAIN>/widgets/ligen/<LEAGUE-ID>/spielplan`
+`https://<DOMAIN>/ligen/<LEAGUE-ID>/spielplan`
 ```
 Example URL:
 ```
-`https://www.handball.net/widgets/ligen/handball4all.westfalen.owl-l-mst2_wfow/spielplan`
+`https://www.handball.net/ligen/handball4all.westfalen.owl-l-mst2_wfow/spielplan`
 ```
 add the ID in the section of the MMM-handball-netz config.js section as below:
 ```
@@ -101,9 +104,10 @@ Example:
 `'handball4all.westfalen.owl-l-mst2_wfow'`
 ```
 
-If the league is divided into different groups, sequences or phases, you must also select the desired phase:
+If the league is divided into different groups, sequences or phases, you must also select the desired phase in the selection area at the top of the Page:
+If you selected a phase, the URL in Browser should cheanged to something like the following structure.
 ```
-`https://<DOMAIN>/widgets/ligen/<LEAGUE-ID>/spielplan?phase=<PHASE-ID>`
+`https://<DOMAIN>/ligen/<LEAGUE-ID>/spielplan?phase=<PHASE-ID>`
 ```
 
 Example URL:
@@ -160,7 +164,7 @@ Omitting a league code from `'show'` in this array will show the full league tab
 Any league included here need to be included in `'show'` as well to show the league on your mirror.
 
 ## Replacements
-There is a `replacements.json` file in the directory including all teams of the free plan. By default, the default replacement for the original team name will be used in the module. You can choose between 'default' mode or 'short' mode showing the 3-letter ID code for the team for a super slim module.
+There is a `replacements.json` file in the directory including some example of original team names with shortend spellings. By default, the default replacement for the original team name will be used in the module. You can choose between 'default' mode or 'short' mode showing the 3-letter ID code for the team for a super slim module.
 There is no need to add Teams with different Team-Numbers in the replacments.json File
 Example Entry:	"JSG Handball Löhne-Mennighüffen-Obernbeck":"JSG Handball LöhMeOb",
 Will also replace SG Handball Löhne-Mennighüffen-Obernbeck 3 => JSG Handball LöhMeOb 3 and so on.
@@ -187,14 +191,9 @@ It is also planned to include more detailed information like scorers per league 
 Can be switched off in config.
 
 
-## OPTIONAL: Voice Control (may be bugged!)
+## Known Bugs
 
-
-### Mode
-
-
-### List of all Voice Commands
-
+Games currently being played are missing in the provided JSON. So for now there will be only played and upcoming Games visible. No Live Games available in the moment. Bug is reported, but it's not clear when the provider will fix the problem.
 
 ### TODOs
 
