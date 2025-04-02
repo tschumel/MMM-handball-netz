@@ -140,6 +140,7 @@ Example:
 | `max_teams` | false | How many teams should be displayed when focus is activated. Omit this option or set to false to show the full league table. |
 | `replace` | 'default' | Choose between 'default' for a default replacement of original club names or 'short' for a 3-Letter-Code of the teams. Choose anything else (like '') for original team names from the API. **See below** for further information |
 | `logos` | true | Boolean to show club logos. |
+| `leagueLogos` | true | Boolean to show league/tournament logos. |
 | `liveMode` | true | Activates live mode when games are in play. (planned) (see below) |
 | `matchType` | 'league' | In the moment only Leagues are provided: `'league'` for showing the current matchday of selected leagues (in `show`) |
 | `numberOfNextMatches` | 8 | Defines number of next matches of all focused clubs for matchType `'next'` |
