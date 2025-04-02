@@ -100,6 +100,7 @@ module.exports = NodeHelper.create({
 			var apiUrl = "https://www.handball.net/a/sportdata/1/widgets/tournament/"+ params[0] +"/table?";
 			phase = params.length > 1 ? params[1] :"";
 			if (phase) apiUrl = apiUrl + "phase=" + phase;
+			this.log("API-Call:  "+apiUrl);
 			return apiUrl; 
 		});
         Promise.all(urlArray.map(url => {
@@ -174,6 +175,7 @@ module.exports = NodeHelper.create({
 			var apiUrl = "https://www.handball.net/a/sportdata/1/widgets/tournament/"+ params[0] +"/schedule?";
 			phase = params.length > 1 ? params[1] :"";
 			if (phase) apiUrl = apiUrl + "phase=" + phase;
+			this.log("API-Call:  "+apiUrl);
 			return apiUrl; 
 		});
         this.liveLeagues = [];

@@ -24,13 +24,14 @@ Module.register('MMM-handball-netz', {
         fadeFocus: true,
         max_teams: false,
         logos: true,
+		leagueLogos: false,
         showTables: true,
         showMatches: true,
         showMatchDay: true,
         matchType: 'league',    //choose 'next', 'daily', or 'league'
         numberOfNextMatches: 8,
         leagues: {
-            GERMANY: 'handball4all.westfalen.owl-l-mst2_wfow'
+            GERMANY: 'sr.competition.149'
         },
         replace: 'default',     //choose 'default', 'short' or '' for original names
         daysOffset: 0,
@@ -207,11 +208,21 @@ Module.register('MMM-handball-netz', {
                 season: (Object.keys(this.tables).length > 0) ? "" : this.translate('LOADING'),
             }
         }
+		var competionName = (Object.keys(this.tables).length > 0) ? this.tables[this.competition].competition.name : "";
+		var phaseName = (Object.keys(this.tables).length > 0) ? this.tables[this.competition].competition.phaseName : "";
+        
+		return {
+            competition: (phaseName && phaseName.includes(competionName)) ? phaseName : competionName,
+			phase: (competionName && competionName.includes(phaseName)) ? "" : (phaseName && phaseName.includes(competionName) ? "":phaseName ),
+            season: (Object.keys(this.tables).length > 0) ? `${this.translate('MATCHDAY')}: ${this.translate(this.matchDay)}` : this.translate('LOADING'),
+        }
+		/*
         return {
             competition: (Object.keys(this.tables).length > 0) ? this.tables[this.competition].competition.name : "",
 			phase: (Object.keys(this.tables).length > 0) ? this.tables[this.competition].competition.phaseName : "",
             season: (Object.keys(this.tables).length > 0) ? `${this.translate('MATCHDAY')}: ${this.translate(this.matchDay)}` : this.translate('LOADING'),
         }
+		*/
     },
 
 
@@ -226,6 +237,10 @@ Module.register('MMM-handball-netz', {
             var matches = allMatches[this.competition].matches;
 			// getting the Name of the "phase" because it's not availabe in standings "
 			var phaseName = (matches.length > 0) ? matches[0].phase.name: "" ; 
+			var competionName = (matches.length > 0) ? matches[0].tournament.name: "" ;
+            matches[0].tournament.name = (phaseName && phaseName.includes(competionName)) ? phaseName : competionName;
+			phaseName = (competionName && competionName.includes(phaseName)) ? "" : (phaseName && phaseName.includes(competionName) ? "":phaseName );
+
 			/* not needed anymore
 			var firstMatch = matches.filter(match => {
                     return moment(match.startsAt).isoWeek() == this.matchDay;
